@@ -1,20 +1,20 @@
-#include <iostream>
-
 #include "src/b_tree.h"
 
 int main()
 {
-    BTree<int> bTree(3);
-    std::vector<int> input = {10, 20, 35, 40, 65, 2, 4, 5, 34, 3, 4, 50, 70, 80, 90, 1235, 325, 34, 2334, 324234, 10, 10};
+    BTree<int> bTree(2, true, "../storage");
+
+    std::vector<int> input = {11, 12, 13, 14, 1, 2, 3, 4, 5, 15, 16, 6, 7, 8, 9, 10};
+
     for (const auto &i : input)
     {
         bTree.Insert(i);
     }
-    std::vector<int> another_input = {120, 2134, 43, 3535};
-    for (const auto &i : another_input)
-    {
-        bTree.Insert(i);
-    }
     bTree.Print();
+    std::cout << bTree.Find(11) << '\n';
+    bTree.Erase(11);
+    std::cout << bTree.Find(5) << '\n';
+    std::cout << bTree.Find(11) << '\n';
+
     return 0;
 }
