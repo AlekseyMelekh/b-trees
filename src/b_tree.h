@@ -43,7 +43,7 @@ template <typename TKey, typename Hash = std::hash<TKey>> class BTree
     void RemoveFromLeaf(std::shared_ptr<Node> leaf, int keyIndex, bool rootCall);
     void RemoveFromInternal(std::shared_ptr<Node> node, int keyIndex, bool rootCall);
     std::pair<int, TKey> RemoveMin(std::shared_ptr<Node> node);
-    void Erase(std::shared_ptr<Node> node, const TKey &value);
+    void Erase(std::shared_ptr<Node> node, int key);
     bool Find(std::shared_ptr<Node> node, const TKey &value) const;
     std::shared_ptr<Node> Split(std::shared_ptr<Node> parent, std::shared_ptr<Node> childPtr, int child);
     void Merge(std::shared_ptr<Node> parent, std::shared_ptr<Node> firstPart, std::shared_ptr<Node> secondPart,
@@ -53,12 +53,14 @@ template <typename TKey, typename Hash = std::hash<TKey>> class BTree
     bool EraseResolve(std::shared_ptr<Node> parent, std::shared_ptr<Node> child, int childIndex);
     void BackupTree() const;
     void Print(std::shared_ptr<Node> node, int level) const;
+    std::optional<TKey> Get(std::shared_ptr<Node> node, const TKey &value) const;
 
   public:
     BTree(int parameter, bool binary, const std::string &storageLocation);
     void Insert(TKey value);
     void Erase(TKey value);
     bool Find(TKey value) const;
+    std::optional<TKey> Get(int i, int j) const;
     void Print() const;
     ~BTree();
 };
@@ -116,7 +118,8 @@ template <typename TKey, typename Hash> void BTree<TKey, Hash>::BackupTree() con
     fclose(output);
 }
 
-template <typename TKey, typename Hash> void BTree<TKey, Hash>::ReadNodeKeys(std::shared_ptr<Node> &node, int index) const
+template <typename TKey, typename Hash>
+void BTree<TKey, Hash>::ReadNodeKeys(std::shared_ptr<Node> &node, int index) const
 {
     node = std::shared_ptr<Node>(new Node());
     if (binary)
@@ -155,7 +158,8 @@ template <typename TKey, typename Hash> void BTree<TKey, Hash>::ReadNodeKeys(std
     }
 }
 
-template <typename TKey, typename Hash> void BTree<TKey, Hash>::ReadNodeValues(std::shared_ptr<Node> &node, int index) const
+template <typename TKey, typename Hash>
+void BTree<TKey, Hash>::ReadNodeValues(std::shared_ptr<Node> &node, int index) const
 {
     if (binary)
     {
@@ -250,7 +254,7 @@ std::shared_ptr<typename BTree<TKey, Hash>::Node> BTree<TKey, Hash>::Split(std::
     for (int keyIndex = parent->size; keyIndex > child; keyIndex--)
     {
         parent->keys[keyIndex] = parent->keys[keyIndex - 1];
-        parent->values[keyIndex] = parent->keys[keyIndex - 1];
+        parent->values[keyIndex] = parent->values[keyIndex - 1];
     }
     parent->keys[child] = firstPart->keys[parameter - 1];
     parent->values[child] = firstPart->values[parameter - 1];
@@ -481,7 +485,8 @@ template <typename TKey, typename Hash> std::pair<int, TKey> BTree<TKey, Hash>::
     }
 }
 
-template <typename TKey, typename Hash> bool BTree<TKey, Hash>::Find(std::shared_ptr<Node> node, const TKey &value) const
+template <typename TKey, typename Hash>
+bool BTree<TKey, Hash>::Find(std::shared_ptr<Node> node, const TKey &value) const
 {
     int keyIndex = std::upper_bound(node->keys, node->keys + node->size, hasher(value)) - node->keys - 1;
     if (keyIndex != -1 && node->keys[keyIndex] == hasher(value))
@@ -490,7 +495,7 @@ template <typename TKey, typename Hash> bool BTree<TKey, Hash>::Find(std::shared
         return false;
     std::shared_ptr<Node> child;
     ReadNodeKeys(child, node->children[keyIndex + 1]);
-    return Find(child, hasher(value));
+    return Find(child, value);
 }
 
 template <typename TKey, typename Hash> void BTree<TKey, Hash>::Insert(std::shared_ptr<Node> node, const TKey &value)
@@ -536,11 +541,11 @@ template <typename TKey, typename Hash> void BTree<TKey, Hash>::Insert(std::shar
     }
 }
 
-template <typename TKey, typename Hash> void BTree<TKey, Hash>::Erase(std::shared_ptr<Node> node, const TKey &value)
+template <typename TKey, typename Hash> void BTree<TKey, Hash>::Erase(std::shared_ptr<Node> node, int key)
 {
     int keyIndex;
-    keyIndex = std::upper_bound(node->keys, node->keys + node->size, hasher(value)) - node->keys - 1;
-    if (keyIndex != -1 && node->keys[keyIndex] == hasher(value))
+    keyIndex = std::upper_bound(node->keys, node->keys + node->size, key) - node->keys - 1;
+    if (keyIndex != -1 && node->keys[keyIndex] == key)
     {
         ReadNodeValues(node, node->index);
         if (node->leaf)
@@ -555,7 +560,45 @@ template <typename TKey, typename Hash> void BTree<TKey, Hash>::Erase(std::share
         ReadNodeValues(child, node->children[keyIndex + 1]);
         if (child->size == parameter - 1)
             EraseResolve(node, child, keyIndex + 1);
-        Erase(child, value);
+        Erase(child, key);
+    }
+}
+
+template <typename TKey, typename Hash>
+std::optional<TKey> BTree<TKey, Hash>::Get(std::shared_ptr<Node> node, const TKey &value) const
+{
+    int keyIndex = std::upper_bound(node->keys, node->keys + node->size, hasher(value)) - node->keys - 1;
+    ReadNodeValues(node, node->index);
+    if (keyIndex != -1 && node->keys[keyIndex] == hasher(value))
+        return std::optional<TKey>(node->values[keyIndex]);
+    if (node->leaf)
+        return std::optional<TKey>();
+    std::shared_ptr<Node> child;
+    ReadNodeKeys(child, node->children[keyIndex + 1]);
+    return Get(child, value);
+}
+
+template <typename TKey, typename Hash> void BTree<TKey, Hash>::Print(std::shared_ptr<Node> node, int level) const
+{
+    std::cout << "level: " << level << " {";
+    for (int i = 0; i < node->size; ++i)
+    {
+        std::cout << node->keys[i];
+        if (i + 1 != node->size)
+        {
+            std::cout << ", ";
+        }
+    }
+    std::cout << "}\n";
+    if (node->leaf)
+    {
+        return;
+    }
+    for (int i = 0; i <= node->size; ++i)
+    {
+        std::shared_ptr<Node> child;
+        ReadNodeKeys(child, node->children[i]);
+        Print(child, level + 1);
     }
 }
 
@@ -619,9 +662,16 @@ template <typename TKey, typename Hash> void BTree<TKey, Hash>::Erase(TKey value
                 WriteNode(root);
             }
         }
-        Erase(child, value);
+        Erase(child, hasher(value));
     }
     BackupTree();
+}
+
+template <typename TKey, typename Hash> std::optional<TKey> BTree<TKey, Hash>::Get(int i, int j) const
+{
+    std::shared_ptr<Node> root;
+    ReadNodeKeys(root, rootIndex);
+    return Get(root, TKey(0, i, j));
 }
 
 template <typename TKey, typename Hash> void BTree<TKey, Hash>::Print() const
@@ -629,30 +679,6 @@ template <typename TKey, typename Hash> void BTree<TKey, Hash>::Print() const
     std::shared_ptr<Node> root;
     ReadNodeKeys(root, rootIndex);
     Print(root, 0);
-}
-
-template <typename TKey, typename Hash> void BTree<TKey, Hash>::Print(std::shared_ptr<Node> node, int level) const
-{
-    std::cout << "level: " << level << " {";
-    for (int i = 0; i < node->size; ++i)
-    {
-        std::cout << node->keys[i];
-        if (i + 1 != node->size)
-        {
-            std::cout << ", ";
-        }
-    }
-    std::cout << "}\n";
-    if (node->leaf)
-    {
-        return;
-    }
-    for (int i = 0; i <= node->size; ++i)
-    {
-        std::shared_ptr<Node> child;
-        ReadNodeKeys(child, node->children[i]);
-        Print(child, level + 1);
-    }
 }
 
 #endif
