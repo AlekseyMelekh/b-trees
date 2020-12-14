@@ -1,4 +1,3 @@
-#include "src/b_plus_tree.h"
 #include "src/b_tree.h"
 #include <ctime>
 #include <random>
@@ -41,9 +40,12 @@ struct TableItem
     }
 };
 
-const int kTableRow = 100;
-const int kTableCols = 100;
-const int kParam = 100;
+const int kTableRow = 50622;
+const int kTableCols = 31622;
+const int kParam = 160;
+const int N = 31622 * 31622;
+const int ROOT_PARAMETER = 37;
+const std::string storageLocation = "../../storage-b-tree-gen";
 
 namespace std
 {
@@ -65,67 +67,173 @@ int GetRand(int l, int r)
     return distrib(gen);
 }
 
-void TestBTree()
+void TestBTree(const std::string &);
+
+inline int GenerateTree(int l, int r, int& num)
 {
-    BTree<TableItem> bTree(kParam, true, "../storage-b-tree");
-    int cntInsert = 0;
-    for (int i = 0; i < kTableRow; ++i)
+    int result = num;
+    FILE* output;
+    fopen_s(&output, (storageLocation + "/node-k" + std::to_string(num) + ".bin").c_str(), "wb");
+    num++;
+    if (r - l + 1 >= kParam - 1 && r - l + 1 <= 2 * kParam - 1)
     {
-        for (int j = 0; j < kTableCols; ++j)
+        int size = r - l + 1;
+        bool leaf = true;
+        fwrite(&size, sizeof(int), 1, output);
+        fwrite(&leaf, sizeof(bool), 1, output);
+        for (int i = l; i <= r; i++)
+            fwrite(&i, sizeof(int), 1, output);
+        fclose(output);
+        fopen_s(&output, (storageLocation + "/node-v" + std::to_string(result) + ".bin").c_str(), "wb");
+        for (int i = l; i <= r; i++)
         {
-            if (GetRand(1, 5) == 1)
-            {
-                bTree.Insert(TableItem(GetRand(1, 100), i, j));
-                cntInsert++;
-            }
+            TableItem item(GetRand(1, 100000), 1, 1);
+            fwrite(&item, sizeof(TableItem), 1, output);
         }
+        fclose(output);
+        return result;
     }
-    std::cout << cntInsert << " items inserted\n";
-    int cntErase = 0;
-    for (int i = 0; i < kTableRow; ++i)
+    int parameter;
+    if (l == 0 && r == N - 1)
+        parameter = ROOT_PARAMETER;
+    else
+        parameter = 300;
+    int childSize = (r - l + 1 - (parameter - 1)) / parameter;
+    int additionalChilds = (r - l + 1 - (parameter - 1)) % parameter;
+    int cnt = 0;
+    int size = parameter - 1;
+    bool leaf = false;
+    fwrite(&size, sizeof(int), 1, output);
+    fwrite(&leaf, sizeof(bool), 1, output);
+    for (int i = l + childSize + (cnt < additionalChilds); i < r; i += childSize + 1 + (cnt < additionalChilds))
     {
-        for (int j = 0; j < kTableCols; ++j)
-        {
-            TableItem temp = TableItem(GetRand(1, 100), i, j);
-            if (GetRand(1, 5) == 1 && bTree.Find(temp))
-            {
-                bTree.Erase(temp);
-                cntErase++;
-            }
-        }
+        fwrite(&i, sizeof(int), 1, output);
+        cnt++;
     }
-    std::cout << cntErase << " items erased\n";
-    int cntFind = 0;
-    for (int i = 0; i < kTableRow; ++i)
+    cnt = 0;
+    for (int i = l + childSize + (cnt < additionalChilds); i < r; i += childSize + 1 + (cnt < additionalChilds))
     {
-        for (int j = 0; j < kTableCols; ++j)
-        {
-            cntFind += bTree.Find(TableItem(GetRand(1, 100), i, j));
-        }
+        int subresult = GenerateTree(i - childSize - (cnt < additionalChilds), i - 1, num);
+        fwrite(&subresult, sizeof(int), 1, output);
+        cnt++;
     }
-    std::cout << cntFind << " items found\n";
-    int cntGet = 0;
-    for (int i = 0; i < kTableRow; ++i)
+    int subresult = GenerateTree(r - childSize + 1, r, num);
+    fwrite(&subresult, sizeof(int), 1, output);
+    fclose(output);
+    fopen_s(&output, (storageLocation + "/node-v" + std::to_string(result) + ".bin").c_str(), "wb");
+    cnt = 0;
+    for (int i = l + childSize + (cnt < additionalChilds); i < r; i += childSize + 1 + (cnt < additionalChilds))
     {
-        for (int j = 0; j < kTableCols; ++j)
-        {
-            auto value = bTree.Get(i, j);
-            cntGet += value.has_value();
-        }
+        TableItem item(GetRand(1, 100000), 1, 1);
+        fwrite(&item, sizeof(TableItem), 1, output);
+        cnt++;
     }
-    std::cout << cntGet << " items got\n";
-    std::cerr << clock() / (long double)CLOCKS_PER_SEC << " sec.\n";
+    fclose(output);
+    return result;
 }
 
-void TestBPlusTree()
+void GenerateBTree()
 {
-    BPlusTree<int> bPlusTree(2, true, "../storage-b-plus-tree");
+    FILE *output;
+    int rootIndex = 0;
+    int lastIndex = 0;
+    bool binary = true;
+    fopen_s(&output, (storageLocation + "/treeParams.bin").c_str(), "wb");
+    fwrite(&kParam, sizeof(int), 1, output);
+    fwrite(&rootIndex, sizeof(int), 1, output);
+    fwrite(&lastIndex, sizeof(int), 1, output);
+    fwrite(&binary, sizeof(bool), 1, output);
+    fclose(output);
+    GenerateTree(0, N - 1, lastIndex);
 }
 
 int main()
 {
-    TestBTree();
-    //    TestBPlusTree();
-
+    TestBTree(storageLocation);
+//    GenerateBTree();
     return 0;
+}
+
+void TestBTree(const std::string &storageLocation)
+{
+    BTree<TableItem> bTree(kParam, true, storageLocation);
+    long double prevTime = 0;
+    std::vector<long double> insertTime, eraseTime, getTime;
+    long double sum = 0;
+    for (int i = 0; i < 1000; ++i)
+    {
+        bTree.Get(GetRand(1, 31621), GetRand(1, 31621));
+        getTime.emplace_back(clock() / (long double)CLOCKS_PER_SEC - prevTime);
+        prevTime = clock() / (long double)CLOCKS_PER_SEC;
+    }
+    sum = 0;
+    for (const auto &i : getTime)
+    {
+        sum += i;
+    }
+    std::cout << "1000 get: " << sum << " sec.\n";
+    std::cout << "avg get: " << sum / getTime.size() << " sec.\n\n";
+    for (int i = 0; i < 1000; ++i)
+    {
+        bTree.Erase(TableItem(4, GetRand(1, 31621), GetRand(1, 31621)));
+        eraseTime.emplace_back(clock() / (long double)CLOCKS_PER_SEC - prevTime);
+        prevTime = clock() / (long double)CLOCKS_PER_SEC;
+    }
+    sum = 0;
+    for (const auto &i : eraseTime)
+    {
+        sum += i;
+    }
+    std::cout << "1000 erase: " << sum << " sec.\n";
+    std::cout << "avg erase: " << sum / eraseTime.size() << " sec.\n";
+
+//    int cntInsert = 0;
+//    long double prev = 0;
+//    for (int i = 0; i < kTableRow; ++i)
+//    {
+//        for (int j = 0; j < kTableCols; ++j)
+//        {
+//            bTree.Insert(TableItem(GetRand(1, 100), i, j));
+//            cntInsert++;
+//        }
+//        std::cout << cntInsert << "\n";
+//        std::cout << clock() / (long double)CLOCKS_PER_SEC - prev << " sec.\n";
+//        prev = clock() / (long double)CLOCKS_PER_SEC;
+//    }
+//    std::cerr << clock() / (long double)CLOCKS_PER_SEC << " sec.\n";
+//    std::cout << cntInsert << " items inserted\n";
+//    int cntErase = 0;
+//    for (int i = 0; i < kTableRow; ++i)
+//    {
+//        for (int j = 0; j < kTableCols; ++j)
+//        {
+//            TableItem temp = TableItem(GetRand(1, 100), i, j);
+//            if (GetRand(1, 5) == 1 && bTree.Find(temp))
+//            {
+//                bTree.Erase(temp);
+//                cntErase++;
+//            }
+//        }
+//    }
+//    std::cout << cntErase << " items erased\n";
+//    int cntFind = 0;
+//    for (int i = 0; i < kTableRow; ++i)
+//    {
+//        for (int j = 0; j < kTableCols; ++j)
+//        {
+//            cntFind += bTree.Find(TableItem(GetRand(1, 100), i, j));
+//        }
+//    }
+//    std::cout << cntFind << " items found\n";
+//    int cntGet = 0;
+//    for (int i = 0; i < kTableRow; ++i)
+//    {
+//        for (int j = 0; j < kTableCols; ++j)
+//        {
+//            auto value = bTree.Get(i, j);
+//            cntGet += value.has_value();
+//        }
+//    }
+//    std::cout << cntGet << " items got\n";
+    std::cerr << clock() / (long double)CLOCKS_PER_SEC << " sec.\n";
 }
