@@ -8,6 +8,7 @@
 #include <queue>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 template <typename TKey, typename Hash = std::hash<TKey>> class BTree
 {

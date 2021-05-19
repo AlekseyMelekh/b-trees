@@ -1,0 +1,30 @@
+=====================================Experiment 5==========================================
+Deleting those movies with the attribute averageRating equal to 7...
+End of linked listSuccessfully deleted 7
+B+ Tree after deletion
+Number of times that a node is deleted (or two nodes are merged): 1
+Number of nodes in updated B+ Tree --- 137
+Height of updated B+ tree --- 4
+
+    level 1: |0xb6dc408 | 0 | 0xb6dddd0 | 6.2 | 0xb6dea50| x |  Null  | x |  Null  | x |  Null  | x |  Null  | x |  Null  |
+       level 2: |0xb6dc084 | 4 | 0xb6dcef8 | 4.4 | 0xb6dcb10 | 5 | 0xb6dc91c | 5.4 | 0xb6ddd6c| x |  Null  | x |  Null  | x |  Null  |
+          level 3: |0xb6dcd68 | 2.8 | 0xb6dd4d4 | 3.4 | 0xb6dcdcc | 3.5 | 0xb6dcf5c | 3.6 | 0xb6dca48 | 3.7 | 0xb6dce94 | 3.9 | 0xb6dcef8| x |  Null  |
+          level 3: |0xb6dcca0 | 4 | 0xb6dc9e4 | 4.1 | 0xb6dc854 | 4.2 | 0xb6dcaac | 4.3 | 0xb6dcb10| x |  Null  | x |  Null  | x |  Null  |
+          level 3: |0xb6dd538 | 4.4 | 0xb6dd150 | 4.5 | 0xb6dd790 | 4.6 | 0xb6dc980 | 4.7 | 0xb6dd600 | 4.8 | 0xb6dd664 | 4.9 | 0xb6dc91c| x |  Null  |
+          level 3: |0xb6dd9e8 | 5 | 0xb6dd8bc | 5.1 | 0xb6dd40c | 5.2 | 0xb6dd984 | 5.3 | 0xb6dc728| x |  Null  | x |  Null  | x |  Null  |
+          level 3: |0xb6dd6c8 | 7.5 | 0xb6dce30 | 7.6 | 0xb6de8c0 | 7.8 | 0xb6df478 | 7.9 | 0xb6df34c | 8 | 0xb6ddb14 | 8.1 | 0xb6ddd08 | 8.2 |  Null |
+       level 2: |0xb6dc3a4 | 4.1 | 0xb6de5a0 | 4.5 | 0xb6de348 | 5 | 0xb6de0f0 | 5.1 | 0xb6defc8 | 5.4 | 0xb6df414 | 5.6 | 0xb6de9ec | 5.8 | 0xb6deb7c|
+          level 3: |0xb6de988 | 3.2 | 0xb6de4d8 | 3.7 | 0xb6de474 | 3.8 | 0xb6de3ac | 4 | 0xb6de9ec| x |  Null  | x |  Null  | x |  Null  |
+          level 3: |0xb6df2e8 | 4.2 | 0xb6dec44 | 4.3 | 0xb6de53c | 4.5 | 0xb6de280 | 4.6 | 0xb6de154 | 4.7 | 0xb6ddfc4 | 4.8 | 0xb6de7f8 | 4.9 | 0xb6de348|
+          level 3: |0xb6ded70 | 4.6 | 0xb6df02c | 4.7 | 0xb6deca8 | 4.8 | 0xb6def64 | 4.9 | 0xb6de2e4 | 5 | 0xb6defc8| x |  Null  | x |  Null  |
+          level 3: |0xb6df3b0 | 5 | 0xb6dee9c | 5.1 | 0xb6ded0c | 5.2 | 0xb6deab4 | 5.3 | 0xb6df414| x |  Null  | x |  Null  | x |  Null  |
+          level 3: |0xb6de08c | 5.1 | 0xb6df1bc | 5.2 | 0xb6df540 | 5.3 | 0xb6df0f4 | 5.4 | 0xb6de6cc | 5.5 | 0xb6de0f0| x |  Null  | x |  Null  |
+          level 3: |0xb6debe0 | 5.4 | 0xb6deb18 | 5.5 | 0xb6de028 | 5.6 | 0xb6de604 | 5.7 | 0xb6deb7c| x |  Null  | x |  Null  | x |  Null  |
+          level 3: |0xb6de21c | 4.1 | 0xb6de730 | 4.2 | 0xb6de85c | 4.3 | 0xb6de794 | 4.4 | 0xb6dedd4 | 5.6 | 0xb6df4dc | 5.7 | 0xb6de5a0| x |  Null  |
+          level 3: |0xb6df284 | 5.8 | 0xb6dda4c | 5.9 | 0xb6df158 | 6 | 0xb6de410 | 6.1 | 0xb6ddefc| x |  Null  | x |  Null  | x |  Null  |
+       level 2: |0xb6ddefc | 6.6 | 0xb6dcbd8 | 7.1 | 0xb6dd72c | 7.5 | 0xb6ddd6c| x |  Null  | x |  Null  | x |  Null  | x |  Null  |
+          level 3: |0xb6df220 | 6.2 | 0xb6df090 | 6.3 | 0xb6de924 | 6.4 | 0xb6de668 | 6.5 | 0xb6dcbd8| x |  Null  | x |  Null  | x |  Null  |
+          level 3: |0xb6df5a4 | 6.6 | 0xb6dee38 | 6.7 | 0xb6dd2e0 | 6.8 | 0xb6dc46c | 6.9 | 0xb6dd72c| x |  Null  | x |  Null  | x |  Null  |
+          level 3: |0xb6dc5fc | 7.1 | 0xb6ddab0 | 7.2 | 0xb6dd920 | 7.3 | 0xb6dc534 | 7.4 | 0xb6ddd6c| x |  Null  | x |  Null  | x |  Null  |
+          level 3: |0xb6dd6c8 | 7.5 | 0xb6dce30 | 7.6 | 0xb6de8c0 | 7.8 | 0xb6df478 | 7.9 | 0xb6df34c | 8 | 0xb6ddb14 | 8.1 | 0xb6ddd08 | 8.2 |  Null |
+

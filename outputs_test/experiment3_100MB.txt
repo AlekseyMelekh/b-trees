@@ -1,0 +1,15 @@
+=====================================Experiment 3==========================================
+Retrieving the attribute tconst of those movies with averageRating equal to 8...
+Index node accessed. Content is -----|0xb6dc408 | 0 | 0xb6dddd0 | 6.2 | 0xb6dea50| x |  Null  | x |  Null  | x |  Null  | x |  Null  | x |  Null  |
+Index node accessed. Content is -----|0xb6ddefc | 6.6 | 0xb6dcbd8 | 7.1 | 0xb6dd72c | 7.5 | 0xb6ddd6c| x |  Null  | x |  Null  | x |  Null  | x |  Null  |
+Index node accessed. Content is -----|0xb6dd6c8 | 7.5 | 0xb6dce30 | 7.6 | 0xb6de8c0 | 7.8 | 0xb6df478 | 7.9 | 0xb6df34c | 8 | 0xb6ddb14 | 8.1 | 0xb6ddd08 | 8.2 |  Null |
+Index node (LLNode) accessed. Content is -----|0xb6dd6c8 | 7.5 | 0xb6dce30 | 7.6 | 0xb6de8c0 | 7.8 | 0xb6df478 | 7.9 | 0xb6df34c | 8 | 0xb6ddb14 | 8.1 | 0xb6ddd08 | 8.2 |  Null |
+
+LLNode: tconst for average rating: 8 > 
+Data block accessed. Content is -----[tt0000736|5.2|8]  [tt0000737|5.5|19]  [tt0000738|8|12]  [tt0000739|6.2|8]  [tt0000740|5.8|9]  
+tt0000738 | x | x | x | x | x | x | End of linked list
+
+Number of index blocks the process accesses: 4
+Number of record blocks the process accesses: 1
+
+No more records found for range 8 to 8
